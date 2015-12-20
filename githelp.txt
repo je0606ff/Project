@@ -1,0 +1,72 @@
+download/install git
+
+
+在該目錄，按右鍵啟動 git bash
+
+1. who are you? {for FIRST TIME git user}
+   git config --global user.mail "je0606ff@gmail.com"
+   git config --global user.name "je0606ff"
+
+=============================================================================
+{first time to create repository}
+2. git init {.git is created}
+
+3. vi .gitignore  #directory or files NOT to be added (e.g. */Thumbs.db)
+   {vi指令  i: insert, ESC: stop insert, :wq write & quit}
+
+4. git add . {add all files to git}
+
+5. git commit //write something
+
+6. {go to github.com; add new repository}
+
+7. --- do not use this ----
+   {to file manager, right click for git-gui}
+    Remote/Push, set Destination Directory
+
+rather,
+7'. git remote add origin https://github.com/je0606ff/Project.git
+    git push -u origin master
+
+11/4/2014: from caa
+只要推一版叫做 gh-pages 的 branch 上github就行了
+指令：
+git checkout -b gh-pages
+git push origin gh-pages
+然後就會有一個網址叫
+http://je0606ff.github.io/Project/index.html
+的網站了。
+
+可編輯一份 index.html, with proper links to other files
+
+=====================================================================
+[when some files are modified]
+
+{at master branch}
+(when new files are to be added: untracked --> add )
+(when some files are changed: --> update)
+
+git add -i  {interactive add}
+
+git commit
+
+git push -u origin master
+
+
+{mirroring changes to gh-pages}
+git checkout gh-pages
+git merge master
+git push origin gh-pages
+
+
+{change back to master branch}
+git checkout master
+
+================================================================
+to redo the repository:
+
+{delete the repository on github}
+
+rm -r -f .git
+
+then start from line 2
