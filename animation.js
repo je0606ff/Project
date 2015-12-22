@@ -178,6 +178,11 @@ function randomBlink() {
     if (toss > 0.5) blink();
 }
 
+function randomBlink_clone() {
+    var toss = Math.random();
+    if (toss > 0.5) blink_clone();
+}
+
 function blink() {
     angle += sign * 0.11;
     if (angle > 0.75) sign *= -1;
@@ -186,5 +191,16 @@ function blink() {
         sign = 1;
     } else {
         setTimeout(blink, 10);
+    }
+}
+
+function blink_clone() {
+    angle_clone += sign_clone * 0.11;
+    if (angle_clone > 0.75) sign_clone *= -1;
+
+    if (angle_clone < 0) {
+        sign_clone = 1;
+    } else {
+        setTimeout(blink_clone, 10);
     }
 }

@@ -40,17 +40,21 @@ function muscles_color() {
             HeadCustom.children[i + 1].children[0].material.color.b = 1;
             HeadCustom.children[i + 1].children[0].material.color.g = 0;
             HeadCustom.children[i + 1].children[0].material.color.r = 0;
-            HeadClone.children[i + 1].children[0].material.color.b = 1;
-            HeadClone.children[i + 1].children[0].material.color.g = 0;
-            HeadClone.children[i + 1].children[0].material.color.r = 0;
+            if (HeadClone.children[i + 1] != undefined) {
+                HeadClone.children[i + 1].children[0].material.color.b = 1;
+                HeadClone.children[i + 1].children[0].material.color.g = 0;
+                HeadClone.children[i + 1].children[0].material.color.r = 0;
+            }
 
         } else {
             HeadCustom.children[i + 1].children[0].material.color.b = 0;
             HeadCustom.children[i + 1].children[0].material.color.g = 0;
             HeadCustom.children[i + 1].children[0].material.color.r = 1;
-            HeadClone.children[i + 1].children[0].material.color.b = 0;
-            HeadClone.children[i + 1].children[0].material.color.g = 0;
-            HeadClone.children[i + 1].children[0].material.color.r = 1;
+            if (HeadClone.children[i + 1] != undefined) {
+                HeadClone.children[i + 1].children[0].material.color.b = 0;
+                HeadClone.children[i + 1].children[0].material.color.g = 0;
+                HeadClone.children[i + 1].children[0].material.color.r = 1;
+            }
         }
     }
 }
