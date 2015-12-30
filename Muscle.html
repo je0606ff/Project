@@ -1,13 +1,12 @@
+
 <!DOCTYPE html>
 <html>
 
 <style>
 #info {
     position: absolute;
-    top: 1%;
-    left: 65%;
-    font-size: 40px;
-    width: 15%;
+    top: 5%;
+    left: 37%;
 }
 </style>
 
@@ -18,6 +17,14 @@
 </head>
 
 <body>
+<div id="info">
+    <button type="button" onclick="javascript:change_face_material();">Change Face Material</button>
+    <button type="button" onclick="javascript:change_muscles();">Change Muscles</button>
+    <button type="button" onclick="javascript:contract_muscles();">Contract Muscles</button>
+    <button type="button" onclick="javascript:relax_muscles();">Relax Muscles</button>
+    <button type="button" onclick="javascript:reset();">Reset</button>
+</div>
+
 <script src="js/r70/three.min.js"></script>
 <script src="js/OrbitControls.js"></script>
 <script src="js/KeyboardState.js"></script>
@@ -455,7 +462,6 @@ function init() {
     //HeadClone.add(Lid);
     HeadCustom.scale.set(4, 4, 4);
     HeadCustom.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
-    HeadCustom.position.x = -50;
     //HeadCustom.receiveShadow = true;
     //HeadCustom.castShadow = true;
     scene.add(HeadCustom);
@@ -466,10 +472,10 @@ function init() {
     //HeadClone.receiveShadow = true;
     //HeadClone.castShadow = true;
     HeadClone.position.x = 50;
-    scene.add(HeadClone);
+    //scene.add(HeadClone);
 
     //text
-    var materialFront = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+    /*var materialFront = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
     var materialSide = new THREE.MeshBasicMaterial( { color: 0x000000 } );
     var materialArray = [ materialFront, materialSide ];
 
@@ -590,17 +596,17 @@ function init() {
     textMesh.position.set(-100, 230, -300);
     textMesh.scale.set(.4, .4, .4);
     scene.add(textMesh);
-    pickables_relax_muscles = [textMesh];
+    pickables_relax_muscles = [textMesh];*/
 
     
     //expression plane
     //Happiness
-    var Happiness_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
+    /*var Happiness_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
     new THREE.MeshPhongMaterial({
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/Happiness.png')
     }));
-    Happiness_plane.position.set(-155, 100, 0);
+    Happiness_plane.position.set(-100, 10, 50);
     Happiness_plane.receiveShadow = true;
     scene.add(Happiness_plane);
     pickables_Happiness = [Happiness_plane];
@@ -611,7 +617,7 @@ function init() {
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/Anger.png')
     }));
-    Anger_plane.position.set(-130, 100, 0);
+    Anger_plane.position.set(-60, 10, 50);
     Anger_plane.receiveShadow = true;
     scene.add(Anger_plane);
     pickables_Anger = [Anger_plane];
@@ -622,7 +628,7 @@ function init() {
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/Surprise.png')
     }));
-    Surprise_plane.position.set(-105, 100, 0);
+    Surprise_plane.position.set(-20, 10, 50);
     Surprise_plane.receiveShadow = true;
     scene.add(Surprise_plane);
     pickables_Surprise = [Surprise_plane];
@@ -633,7 +639,7 @@ function init() {
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/Sadness.png')
     }));
-    Sadness_plane.position.set(-80, 100, 0);
+    Sadness_plane.position.set(20, 10, 50);
     Sadness_plane.receiveShadow = true;
     scene.add(Sadness_plane);
     pickables_Sadness = [Sadness_plane];
@@ -644,7 +650,7 @@ function init() {
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/Fear.png')
     }));
-    Fear_plane.position.set(-55, 100, 0);
+    Fear_plane.position.set(60, 10, 50);
     Fear_plane.receiveShadow = true;
     scene.add(Fear_plane);
     pickables_Fear = [Fear_plane];
@@ -655,10 +661,10 @@ function init() {
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/Disgust.png')
     }));
-    Disgust_plane.position.set(-30, 100, 0);
+    Disgust_plane.position.set(100, 10, 50);
     Disgust_plane.receiveShadow = true;
     scene.add(Disgust_plane);
-    pickables_Disgust = [Disgust_plane];
+    pickables_Disgust = [Disgust_plane];*/
 
     //GUI
     gcontrols = new function () {
@@ -672,7 +678,7 @@ function init() {
         this.Weight = 0.05;
     }
 
-    var gui = new dat.GUI();
+    /*var gui = new dat.GUI();
     gui.domElement.id = 'gui';
 
     var f1 = gui.addFolder("expression_interpolation");
@@ -685,7 +691,7 @@ function init() {
     f1.add(gcontrols, "Happiness_To_Anger").min(-1).max(1).listen();
 
     var f2 = gui.addFolder("Get Or Lose Weight");
-    f2.add(gcontrols, "Weight").min(-.01).max(.1).listen();
+    f2.add(gcontrols, "Weight").min(-.01).max(.1).listen();*/
 
     /*light = new THREE.PointLight(0xffffff);
     light.position.set(0, 150, 200);
@@ -721,7 +727,7 @@ function init() {
     renderer.shadowMapEnabled = true;
     renderer.shadowMapType = THREE.PCFShadowMap;
 
-    //controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
 
     document.body.appendChild(renderer.domElement);
 
@@ -758,7 +764,7 @@ function onDocumentMouseDown(event) {
     //  var intersects = raycaster.intersectObjects( pickables, true );
     var intersects = raycaster.intersectObjects(pickables);
     //function
-    var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
+    /*var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
     var intersects_do_animation = raycaster.intersectObjects(pickables_do_animation);
     var intersects_stop_animation = raycaster.intersectObjects(pickables_stop_animation);
     var intersects_reset = raycaster.intersectObjects(pickables_reset);
@@ -771,11 +777,11 @@ function onDocumentMouseDown(event) {
     var intersects_Surprise = raycaster.intersectObjects(pickables_Surprise);
     var intersects_Sadness = raycaster.intersectObjects(pickables_Sadness);
     var intersects_Fear = raycaster.intersectObjects(pickables_Fear);
-    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);
+    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);*/
 
     if (intersects.length > 0) {}
     //function
-    if (intersects_change_face_material.length > 0) change_face_material();
+    /*if (intersects_change_face_material.length > 0) change_face_material();
     if (intersects_do_animation.length > 0) do_animation();
     if (intersects_stop_animation.length > 0) stop_animation();
     if (intersects_reset.length > 0) reset();
@@ -788,7 +794,7 @@ function onDocumentMouseDown(event) {
     if (intersects_Surprise.length > 0) expression_interpolation(2, 2);
     if (intersects_Sadness.length > 0) expression_interpolation(3, 2);
     if (intersects_Fear.length > 0) expression_interpolation(4, 2);
-    if (intersects_Disgust.length > 0) expression_interpolation(5, 2);
+    if (intersects_Disgust.length > 0) expression_interpolation(5, 2);*/
 
 }
 
@@ -808,7 +814,7 @@ function onDocumentMouseMove(event) {
 
     var intersects = raycaster.intersectObjects(pickables);
     //function
-    var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
+    /*var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
     var intersects_do_animation = raycaster.intersectObjects(pickables_do_animation);
     var intersects_stop_animation = raycaster.intersectObjects(pickables_stop_animation);
     var intersects_reset = raycaster.intersectObjects(pickables_reset);
@@ -821,18 +827,17 @@ function onDocumentMouseMove(event) {
     var intersects_Surprise = raycaster.intersectObjects(pickables_Surprise);
     var intersects_Sadness = raycaster.intersectObjects(pickables_Sadness);
     var intersects_Fear = raycaster.intersectObjects(pickables_Fear);
-    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);
+    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);*/
 
-    if (intersects.length > 0) {
+    /*if (intersects.length > 0) {
     document.body.style.cursor = 'pointer';
     lookAt.copy(intersects[0].point);
-    lookAt.y = 30; // eye level
     HeadCustom.lookAt(lookAt);
     } else {
     document.body.style.cursor = 'auto';
-    }
+    }*/
     //function
-    if (intersects_change_face_material.length > 0) document.body.style.cursor = 'pointer';
+    /*if (intersects_change_face_material.length > 0) document.body.style.cursor = 'pointer';
     if (intersects_do_animation.length > 0) document.body.style.cursor = 'pointer';
     if (intersects_stop_animation.length > 0) document.body.style.cursor = 'pointer';
     if (intersects_reset.length > 0) document.body.style.cursor = 'pointer';
@@ -845,12 +850,12 @@ function onDocumentMouseMove(event) {
     if (intersects_Surprise.length > 0) document.body.style.cursor = 'pointer';
     if (intersects_Sadness.length > 0) document.body.style.cursor = 'pointer'
     if (intersects_Fear.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Disgust.length > 0) document.body.style.cursor = 'pointer';
+    if (intersects_Disgust.length > 0) document.body.style.cursor = 'pointer';*/
 
 }
 
 function animate() {
-    //controls.update();
+    controls.update();
     update();
     requestAnimationFrame(animate);
     render();

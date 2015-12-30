@@ -4,10 +4,16 @@
 <style>
 #info {
     position: absolute;
+    top: 8%;
+    left: 43%;
+}
+
+#body {
+    position: absolute;
     top: 5%;
-    left: 47%;
-    width:120px;
+    left: 35%;
     height:40px;
+    color: #ffff00;
 }
 </style>
 
@@ -18,8 +24,12 @@
 </head>
 
 <body>
+<div id="body">
+    Background Music "Funny Song " ROYALTY FREE MUSIC by BENSOUND <br/>
+</div>  
 <div id="info">
-    <button type="button" onclick="javascript:change_face_material();">Change Face Material</button>
+    <button type="button" onclick="javascript:do_animation();">DO The Animaion</button>
+    <button type="button" onclick="javascript:stop_animation();">Stop The Animaion</button>
 </div>
 
 <script src="js/r70/three.min.js"></script>
@@ -64,6 +74,9 @@
     uniform sampler2D tex_1;
     uniform sampler2D tex_2;
     uniform sampler2D tex_3;
+    uniform sampler2D tex_4;
+    uniform sampler2D tex_5;
+
     uniform float tt;
     uniform int m_case;
 
@@ -71,13 +84,17 @@
         vec3 color;
 
         if (m_case == 0) {
-           color = (1.-tt) *texture2D(tex_0, vUv).rgb + tt* texture2D(tex_1, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_0, vUv).rgb + tt* texture2D(tex_1, vUv).rgb;
         } else if (m_case == 1){
             color = (1.-tt) *texture2D(tex_1, vUv).rgb + tt* texture2D(tex_2, vUv).rgb;
         } else if (m_case == 2){
             color = (1.-tt) *texture2D(tex_2, vUv).rgb + tt* texture2D(tex_3, vUv).rgb;
         } else if (m_case == 3){
-            color = (1.-tt) *texture2D(tex_3, vUv).rgb + tt* texture2D(tex_0, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_3, vUv).rgb + tt* texture2D(tex_4, vUv).rgb;
+        } else if (m_case == 4){
+            color = (1.-tt) *texture2D(tex_4, vUv).rgb + tt* texture2D(tex_5, vUv).rgb;
+        } else if (m_case == 5){
+            color = (1.-tt) *texture2D(tex_5, vUv).rgb + tt* texture2D(tex_0, vUv).rgb;
         }
 
         gl_FragColor = vec4(color, 1.0);
@@ -97,6 +114,9 @@
     uniform sampler2D tex_1_lid;
     uniform sampler2D tex_2_lid;
     uniform sampler2D tex_3_lid;
+    uniform sampler2D tex_4_lid;
+    uniform sampler2D tex_5_lid;    
+    
     uniform float tt;
     uniform int m_case;
 
@@ -104,13 +124,17 @@
         vec3 color;
 
         if (m_case == 0) {
-           color = (1.-tt) *texture2D(tex_0_lid, vUv).rgb + tt* texture2D(tex_1_lid, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_0_lid, vUv).rgb + tt* texture2D(tex_1_lid, vUv).rgb;
         } else if (m_case == 1){
             color = (1.-tt) *texture2D(tex_1_lid, vUv).rgb + tt* texture2D(tex_2_lid, vUv).rgb;
         } else if (m_case == 2){
             color = (1.-tt) *texture2D(tex_2_lid, vUv).rgb + tt* texture2D(tex_3_lid, vUv).rgb;
         } else if (m_case == 3){
-            color = (1.-tt) *texture2D(tex_3_lid, vUv).rgb + tt* texture2D(tex_0_lid, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_3_lid, vUv).rgb + tt* texture2D(tex_4_lid, vUv).rgb;
+        } else if (m_case == 4){
+            color = (1.-tt) *texture2D(tex_4_lid, vUv).rgb + tt* texture2D(tex_5_lid, vUv).rgb;
+        } else if (m_case == 5){
+            color = (1.-tt) *texture2D(tex_5_lid, vUv).rgb + tt* texture2D(tex_0_lid, vUv).rgb;
         }
 
         gl_FragColor = vec4(color, 1.0);
@@ -118,13 +142,14 @@
 </script>
 
 <script>
-var camera, scene, renderer, spotlight_HeadCustom, spotlight_HeadClone, controls, customgeom, customgeom_clone;
+var camera, scene, renderer, spotlight_HeadCustom, controls, customgeom, customgeom_clone;
 var cm = 0, //current msucle
     ce = -1, //current expression
     ag = 0, //animation's gcontroll
     ae = 0, //animation's expression
     am = 0, //animation's map
-    att = 0; //animations's tt
+    att = 0, //animations's tt
+    altt = 0; //animations's lid tt
 var angle = 0,
     sign = 1;
 var mode = 0;
@@ -152,19 +177,6 @@ var raycaster;
 var mouse = new THREE.Vector2();
 var lookAt = new THREE.Vector3();
 var pickables = [];
-var pickables_change_face_material = [];
-var pickables_do_animation = [];
-var pickables_stop_animation = [];
-var pickables_reset = [];
-var pickables_change_muscles = [];
-var pickables_contract_muscles = [];
-var pickables_relax_muscles = [];
-var pickables_Happiness = [];
-var pickables_Anger = [];
-var pickables_Surprise = [];
-var pickables_Sadness = [];
-var pickables_Fear = [];
-var pickables_Disgust = [];
 
 make_face();
 make_muscles();
@@ -277,10 +289,12 @@ function init() {
     var tex1 = THREE.ImageUtils.loadTexture('images/1.jpg');
     var tex2 = THREE.ImageUtils.loadTexture('images/2.jpg');
     var tex3 = THREE.ImageUtils.loadTexture('images/3.jpg');
+    var tex4 = THREE.ImageUtils.loadTexture('images/4.jpg');
+    var tex5 = THREE.ImageUtils.loadTexture('images/5.jpg');
     
     face_material = new THREE.ShaderMaterial({
         side: THREE.DoubleSide,
-        wireframe: true,
+        //wireframe: true,
         uniforms: {
             m_case: {
                 type: 'i',
@@ -305,7 +319,16 @@ function init() {
             tex_3: {
                 type: 't',
                 value: tex3
+            },
+            tex_4: {
+                type: 't',
+                value: tex4
+            },
+            tex_5: {
+                type: 't',
+                value: tex5
             }
+
         },
         vertexShader: document.getElementById('myVertexShader').textContent,
         fragmentShader: document.getElementById('myFragmentShader').textContent
@@ -315,15 +338,6 @@ function init() {
     //customgeom.castShadow = true;
     HeadCustom.add(customgeom);
 
-    face_material_clone = new THREE.MeshPhongMaterial({
-        wireframe: true,
-        color: 0xffffff, 
-        side: THREE.DoubleSide
-    });
-    customgeom_clone = new THREE.Mesh(face_geometry, face_material_clone);
-    //customgeom_clone.castShadow = true;
-    HeadClone.add(customgeom_clone);
-
     //muscles_cylender
     for (var i = 0; i < head.muscles.length; i++) {
         muscles_cylender = myCylinder(new THREE.Vector3(head.muscles[i].head.x, head.muscles[i].head.y, head.muscles[i].head.z), new THREE.Vector3(head.muscles[i].tail.x, head.muscles[i].tail.y, head.muscles[i].tail.z));
@@ -331,16 +345,12 @@ function init() {
         HeadCustom.add(muscles_cylender);
     }
 
-    //muscles_cylender_clone
-    for (var i = 0; i < head.muscles.length; i++) {
-        muscles_cylender = myCylinder(new THREE.Vector3(head.muscles[i].head.x, head.muscles[i].head.y, head.muscles[i].head.z), new THREE.Vector3(head.muscles[i].tail.x, head.muscles[i].tail.y, head.muscles[i].tail.z));
-
-        HeadClone.add(muscles_cylender);
-    }
+    for (var i = 0; i < head.muscles.length; i++) 
+        HeadCustom.children[i + 1].visible = false;
 
     eyes_geometry = new THREE.SphereGeometry(1.2, 32, 32);
     eyes_material = new THREE.MeshPhongMaterial({
-        wireframe: true,
+        //wireframe: true,
         side: THREE.DoubleSide,
         map: THREE.ImageUtils.loadTexture('images/eyetexture.bmp')
     });
@@ -360,29 +370,17 @@ function init() {
     HeadCustom.add(Left_eyes);
     HeadCustom.add(Right_eyes);
 
-    //eyesclone
-    var Left_eyes_clone = new THREE.Mesh(eyes_geometry, eyes_material);
-    var Right_eyes_clone = new THREE.Mesh(eyes_geometry, eyes_material);
-    //Left_eyes_clone.receiveShadow = true;
-    //Left_eyes_clone.castShadow = true;
-    //Right_eyes_clone.receiveShadow = true;
-    //Right_eyes_clone.castShadow = true;
-    Left_eyes_clone.rotation.y = -Math.PI / 2;
-    Right_eyes_clone.rotation.y = -Math.PI / 2;
-    Left_eyes_clone.position.set(2, 2.75, 6.3);
-    Right_eyes_clone.position.set(-2, 2.75, 6.3);
-
-    HeadClone.add(Left_eyes_clone);
-    HeadClone.add(Right_eyes_clone);
-
     var lid_geometry = new THREE.SphereGeometry(1.3, 32, 32, 0, Math.PI);
     var tex0_lid = THREE.ImageUtils.loadTexture('images/george_lid.bmp');
     var tex1_lid = THREE.ImageUtils.loadTexture('images/1_lid.jpg');
     var tex2_lid = THREE.ImageUtils.loadTexture('images/2_lid.jpg');
     var tex3_lid = THREE.ImageUtils.loadTexture('images/3_lid.jpg');
+    var tex4_lid = THREE.ImageUtils.loadTexture('images/4_lid.jpg');
+    var tex5_lid = THREE.ImageUtils.loadTexture('images/5_lid.jpg');
+
     var lid_material = new THREE.ShaderMaterial({
         side: THREE.DoubleSide,
-        wireframe: true,
+        //wireframe: true,
         uniforms: {
             m_case: {
                 type: 'i',
@@ -390,7 +388,7 @@ function init() {
             },
             tt: {
                 type: 'f',
-                value: att
+                value: altt
             },
             tex_0_lid: {
                 type: 't',
@@ -407,6 +405,14 @@ function init() {
             tex_3_lid: {
                 type: 't',
                 value: tex3_lid
+            },
+            tex_4_lid: {
+                type: 't',
+                value: tex4_lid
+            },
+            tex_5_lid: {
+                type: 't',
+                value: tex5_lid
             }
         },
         vertexShader: document.getElementById('myVertexShader_lid').textContent,
@@ -454,215 +460,12 @@ function init() {
     //Lid_clone.receiveShadow = true;
     //Lid_clone.castShadow = true;
 
-    HeadClone.add(Lid_clone);
 
-    //HeadClone.add(Lid);
     HeadCustom.scale.set(4, 4, 4);
-    HeadCustom.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
-    //HeadCustom.position.x = -50;
+    HeadCustom.translateOnAxis(new THREE.Vector3(0, 1, 0), 50);
     //HeadCustom.receiveShadow = true;
     //HeadCustom.castShadow = true;
     scene.add(HeadCustom);
-
-    //HeadClone
-    HeadClone.scale.set(4, 4, 4);
-    HeadClone.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
-    //HeadClone.receiveShadow = true;
-    //HeadClone.castShadow = true;
-    HeadClone.position.x = 50;
-    //scene.add(HeadClone);
-
-    //text
-    /*var materialFront = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-    var materialSide = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-    var materialArray = [ materialFront, materialSide ];
-
-    //Change Face Material
-    var textGeom = new THREE.TextGeometry( "Change Face Material", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-440, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_change_face_material = [textMesh];
-
-    //Do Animation
-    var textGeom = new THREE.TextGeometry( "Do Animation", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-250, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_do_animation = [textMesh];
-
-    //Stop Animation
-    var textGeom = new THREE.TextGeometry( "Stop Animation", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-100, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_stop_animation = [textMesh];
-
-    //reset
-    var textGeom = new THREE.TextGeometry( "Reset", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(50, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_reset = [textMesh];
-
-    //change muscles
-    var textGeom = new THREE.TextGeometry( "Change Muscles", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-440, 230, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_change_muscles = [textMesh];
-
-    //contract muscles
-    var textGeom = new THREE.TextGeometry( "Contract Muscles", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-250, 230, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_contract_muscles = [textMesh];
-
-    //relax muscles
-    var textGeom = new THREE.TextGeometry( "Relax Muscles", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-100, 230, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_relax_muscles = [textMesh];
-
-    
-    //expression plane
-    //Happiness
-    var Happiness_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Happiness.png')
-    }));
-    Happiness_plane.position.set(-155, 100, 0);
-    Happiness_plane.receiveShadow = true;
-    scene.add(Happiness_plane);
-    pickables_Happiness = [Happiness_plane];
-
-    //Anger
-    var Anger_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Anger.png')
-    }));
-    Anger_plane.position.set(-130, 100, 0);
-    Anger_plane.receiveShadow = true;
-    scene.add(Anger_plane);
-    pickables_Anger = [Anger_plane];
-
-    //Surprise
-    var Surprise_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Surprise.png')
-    }));
-    Surprise_plane.position.set(-105, 100, 0);
-    Surprise_plane.receiveShadow = true;
-    scene.add(Surprise_plane);
-    pickables_Surprise = [Surprise_plane];
-
-    //Sadness
-    var Sadness_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Sadness.png')
-    }));
-    Sadness_plane.position.set(-80, 100, 0);
-    Sadness_plane.receiveShadow = true;
-    scene.add(Sadness_plane);
-    pickables_Sadness = [Sadness_plane];
-
-    //Fear
-    var Fear_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Fear.png')
-    }));
-    Fear_plane.position.set(-55, 100, 0);
-    Fear_plane.receiveShadow = true;
-    scene.add(Fear_plane);
-    pickables_Fear = [Fear_plane];
-
-    //Disguest
-    var Disgust_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Disgust.png')
-    }));
-    Disgust_plane.position.set(-30, 100, 0);
-    Disgust_plane.receiveShadow = true;
-    scene.add(Disgust_plane);
-    pickables_Disgust = [Disgust_plane];*/
 
     //GUI
     gcontrols = new function () {
@@ -675,25 +478,6 @@ function init() {
         this.Happiness_To_Anger = 0.1;
         this.Weight = 0.05;
     }
-
-    /*var gui = new dat.GUI();
-    gui.domElement.id = 'gui';
-
-    var f1 = gui.addFolder("expression_interpolation");
-    f1.add(gcontrols, "Happiness").min(0).max(1).listen();
-    f1.add(gcontrols, "Anger").min(0).max(1).listen();
-    f1.add(gcontrols, "Surprise").min(0).max(1).listen();
-    f1.add(gcontrols, "Sadness").min(0).max(1).listen();
-    f1.add(gcontrols, "Fear").min(0).max(1).listen();
-    f1.add(gcontrols, "Disgust").min(0).max(1).listen();
-    f1.add(gcontrols, "Happiness_To_Anger").min(-1).max(1).listen();
-
-    var f2 = gui.addFolder("Get Or Lose Weight");
-    f2.add(gcontrols, "Weight").min(-.01).max(.1).listen();*/
-
-    /*light = new THREE.PointLight(0xffffff);
-    light.position.set(0, 150, 200);
-    scene.add(light);*/
 
     //spotlight_HeadCustom
     spotlight_HeadCustom = new THREE.SpotLight(0xffffff, 1);
@@ -761,38 +545,8 @@ function onDocumentMouseDown(event) {
     // if recursive set to true, can go deeper into object3D hierarchy 
     //  var intersects = raycaster.intersectObjects( pickables, true );
     var intersects = raycaster.intersectObjects(pickables);
-    //function
-    /*var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
-    var intersects_do_animation = raycaster.intersectObjects(pickables_do_animation);
-    var intersects_stop_animation = raycaster.intersectObjects(pickables_stop_animation);
-    var intersects_reset = raycaster.intersectObjects(pickables_reset);
-    var intersects_change_muscles = raycaster.intersectObjects(pickables_change_muscles);
-    var intersects_contract_muscles = raycaster.intersectObjects(pickables_contract_muscles);
-    var intersects_relax_muscles = raycaster.intersectObjects(pickables_relax_muscles);
-    //expression
-    var intersects_Happiness = raycaster.intersectObjects(pickables_Happiness);
-    var intersects_Anger = raycaster.intersectObjects(pickables_Anger);
-    var intersects_Surprise = raycaster.intersectObjects(pickables_Surprise);
-    var intersects_Sadness = raycaster.intersectObjects(pickables_Sadness);
-    var intersects_Fear = raycaster.intersectObjects(pickables_Fear);
-    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);*/
-
+    
     if (intersects.length > 0) {}
-    //function
-    /*if (intersects_change_face_material.length > 0) change_face_material();
-    if (intersects_do_animation.length > 0) do_animation();
-    if (intersects_stop_animation.length > 0) stop_animation();
-    if (intersects_reset.length > 0) reset();
-    if (intersects_change_muscles.length > 0) change_muscles();
-    if (intersects_contract_muscles.length > 0) contract_muscles();
-    if (intersects_relax_muscles.length > 0) relax_muscles();
-    //expression
-    if (intersects_Happiness.length > 0) expression_interpolation(0, 2);
-    if (intersects_Anger.length > 0) expression_interpolation(1, 2);
-    if (intersects_Surprise.length > 0) expression_interpolation(2, 2);
-    if (intersects_Sadness.length > 0) expression_interpolation(3, 2);
-    if (intersects_Fear.length > 0) expression_interpolation(4, 2);
-    if (intersects_Disgust.length > 0) expression_interpolation(5, 2);*/
 
 }
 
@@ -811,44 +565,15 @@ function onDocumentMouseMove(event) {
     raycaster.setFromCamera(mouse, camera);
 
     var intersects = raycaster.intersectObjects(pickables);
-    //function
-    /*var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
-    var intersects_do_animation = raycaster.intersectObjects(pickables_do_animation);
-    var intersects_stop_animation = raycaster.intersectObjects(pickables_stop_animation);
-    var intersects_reset = raycaster.intersectObjects(pickables_reset);
-    var intersects_change_muscles = raycaster.intersectObjects(pickables_change_muscles);
-    var intersects_contract_muscles = raycaster.intersectObjects(pickables_contract_muscles);
-    var intersects_relax_muscles = raycaster.intersectObjects(pickables_relax_muscles);
-    //expression
-    var intersects_Happiness = raycaster.intersectObjects(pickables_Happiness);
-    var intersects_Anger = raycaster.intersectObjects(pickables_Anger);
-    var intersects_Surprise = raycaster.intersectObjects(pickables_Surprise);
-    var intersects_Sadness = raycaster.intersectObjects(pickables_Sadness);
-    var intersects_Fear = raycaster.intersectObjects(pickables_Fear);
-    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);*/
+   
 
-    if (intersects.length > 0) {
+    /*if (intersects.length > 0) {
     document.body.style.cursor = 'pointer';
     lookAt.copy(intersects[0].point);
     HeadCustom.lookAt(lookAt);
     } else {
     document.body.style.cursor = 'auto';
-    }
-    //function
-    /*if (intersects_change_face_material.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_do_animation.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_stop_animation.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_reset.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_change_muscles.length > 0) document.body.style.cursor = 'pointer'
-    if (intersects_contract_muscles.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_relax_muscles.length > 0) document.body.style.cursor = 'pointer';
-    //expression
-    if (intersects_Happiness.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Anger.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Surprise.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Sadness.length > 0) document.body.style.cursor = 'pointer'
-    if (intersects_Fear.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Disgust.length > 0) document.body.style.cursor = 'pointer';*/
+    }*/
 
 }
 
@@ -869,10 +594,8 @@ function update() {
     if (close_eyes == false) {
         //left_lid
         HeadCustom.children[21].children[0].rotation.x = -(Math.PI / 2 + 0.5) + angle;
-        HeadClone.children[21].children[0].rotation.x = -(Math.PI / 2 + 0.5) + angle;
         //right_lid
         HeadCustom.children[21].children[1].rotation.x = -(Math.PI / 2 + 0.5) + angle;
-        HeadClone.children[21].children[1].rotation.x = -(Math.PI / 2 + 0.5) + angle;
     }
     //animate
     if (do_animate) {
@@ -882,7 +605,7 @@ function update() {
         Lid_morphing();
     }
 }
-
+console.log(HeadCustom)
 function render() {
     renderer.render(scene, camera);
 }

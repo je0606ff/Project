@@ -122,6 +122,24 @@ function change_expression() {
     if (g_tmp_Happiness_To_Anger != gcontrols.Happiness_To_Anger) Happiness_To_Anger();
 }
 
+function do_clown_laugh() {
+    clown_animation_init();
+    clown_laugh_animation = true;
+    clown_cry_animation = false;
+    clown_cry.pause();
+    clown_laugh.load();
+    clown_laugh.play();
+}
+
+function do_clown_cry() {
+    clown_animation_init();
+    clown_laugh_animation = false;
+    clown_cry_animation = true;
+    clown_laugh.pause();
+    clown_cry.load();
+    clown_cry.play();
+}
+
 function do_animation() {
     animation_init();
     do_animate = true;
