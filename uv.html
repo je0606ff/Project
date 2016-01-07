@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+#info {
+    position: absolute;
+    top: 5%;
+    left: 47%;
+    width:120px;
+    height:40px;
+}
+body {
+    overflow: hidden;
+}
+</style>
+
+<head>
+
+<script type="text/javascript" src="/D65DD16339AE4F92BBACB44ACF3E3D71/975EF2DE-E20A-1645-9991-720DD82315FE/main.js" charset="UTF-8"></script>
+
+</head>
+
+<body>
+<script src="js/r70/three.min.js"></script>
+<script src="js/KeyboardState.js"></script>
+<!-- load date and function -->
+<script src="facedat.js"></script>
+<script src="head.js"></script>
+<script src="make_face.js"></script>
+<script src="muscle.js"></script>
+
+<script>
+var camera, scene, renderer, controls, customgeom;
+var keyboard = new KeyboardState();
+var clock = new THREE.Clock();
+var head = new Head();
+
+make_face();
+calculate_minmax();
+calculate_texture_coords();
+init();
+animate();
+
+function init() {
+    scene = new THREE.Scene();
+
+    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
+    camera.position.z = 10;
+
+    
+
+    //face
+    face_geometry = new THREE.Geometry();
+    for (var i = 0; i < head.vertices.length; i++)
+    face_geometry.vertices.push(head.vertices[i].xyz);
+
+    //lef_face
+    var face;
+    for (var j = 0; j < indexDat.length / 4; j++) {
+        if (indexDat[4 * j] - 1 === 999) {
+            face = new THREE.Face3(indexDat[4 * j + 1] - 1, indexDat[4 * j + 2] - 1, indexDat[4 * j + 3] - 1);
+            face_geometry.faces.push(face);
+
+        } else {
+            face = new THREE.Face3(indexDat[4 * j + 0] - 1, indexDat[4 * j + 1] - 1, indexDat[4 * j + 2] - 1);
+            face_geometry.faces.push(face);
+
+            face = new THREE.Face3(indexDat[4 * j + 0] - 1, indexDat[4 * j + 2] - 1, indexDat[4 * j + 3] - 1);
+            face_geometry.faces.push(face);
+        }
+    }
+
+    //right_face
+    for (var j = 0; j < indexDat.length / 4; j++) {
+        if (indexDat[4 * j] - 1 === 999) {
+            var r1 = indexDat[4 * j + 1] + 255;
+            var r2 = indexDat[4 * j + 3] + 255;
+            var r3 = indexDat[4 * j + 2] + 255;
+            if (face_geometry.vertices[r1].x === 0) r1 = indexDat[4 * j + 1] - 1;
+            if (face_geometry.vertices[r2].x === 0) r2 = indexDat[4 * j + 3] - 1;
+            if (face_geometry.vertices[r3].x === 0) r3 = indexDat[4 * j + 2] - 1;
+            face = new THREE.Face3(r1, r2, r3);
+            face_geometry.faces.push(face);
+        } else {
+            r1 = indexDat[4 * j + 0] + 255;
+            r2 = indexDat[4 * j + 2] + 255;
+            r3 = indexDat[4 * j + 1] + 255;
+            if (face_geometry.vertices[r1].x === 0) r1 = indexDat[4 * j + 0] - 1;
+            if (face_geometry.vertices[r2].x === 0) r2 = indexDat[4 * j + 2] - 1;
+            if (face_geometry.vertices[r3].x === 0) r3 = indexDat[4 * j + 1] - 1;
+            face = new THREE.Face3(r1, r2, r3);
+            face_geometry.faces.push(face);
+
+            r1 = indexDat[4 * j + 0] + 255;
+            r2 = indexDat[4 * j + 3] + 255;
+            r3 = indexDat[4 * j + 2] + 255;
+            if (face_geometry.vertices[r1].x === 0) r1 = indexDat[4 * j + 0] - 1;
+            if (face_geometry.vertices[r2].x === 0) r2 = indexDat[4 * j + 3] - 1;
+            if (face_geometry.vertices[r3].x === 0) r3 = indexDat[4 * j + 2] - 1;
+            face = new THREE.Face3(r1, r2, r3);
+            face_geometry.faces.push(face);
+        }
+    }
+    var line_geometry = new THREE.Geometry();
+    var line_material = new THREE.LineBasicMaterial({
+        color: 0x000000
+    });
+    var texcoord1 = [];
+    var texcoord2 = [];
+    var texcoord3 = [];
+    for (var i = 0; i < face_geometry.faces.length; i++) {
+        for (j = 0; j < 2; j++) {
+            var a = face_geometry.faces[i].a;
+            var b = face_geometry.faces[i].b;
+            var c = face_geometry.faces[i].c;
+            texcoord1[j] = head.vertices[a].tex[j];
+            texcoord2[j] = head.vertices[b].tex[j];
+            texcoord3[j] = head.vertices[c].tex[j];
+        }
+        var v1 = new THREE.Vector2(texcoord1[0], texcoord1[1]);
+        var v2 = new THREE.Vector2(texcoord2[0], texcoord2[1]);
+        var v3 = new THREE.Vector2(texcoord3[0], texcoord3[1]);
+
+        face_geometry.faceVertexUvs[0].push([v1, v2, v3]);
+        line_geometry.vertices.push(new THREE.Vector3(v1.x, v1.y, 0), new THREE.Vector3(v2.x,  v2.y, 0), new THREE.Vector3(v3.x, v3.y, 0));
+        var line = new THREE.Line(line_geometry, line_material);
+        scene.add(line);
+    }
+
+    
+        
+    console.log(face_geometry)
+    
+    face_geometry.computeBoundingSphere();
+    face_geometry.computeFaceNormals();
+    face_geometry.computeVertexNormals();
+    face_material = new THREE.MeshPhongMaterial({
+        wireframe: true,
+        color: 0xffffff, 
+        side: THREE.DoubleSide
+    });
+
+    customgeom = new THREE.Mesh(face_geometry, face_material);
+    customgeom.scale.set(4,4,4);
+    customgeom.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
+    //scene.add(customgeom);
+
+     var gridXZ = new THREE.GridHelper(50, 10);
+    gridXZ.setColors(new THREE.Color(0xff00ff), new THREE.Color(0xffffff));
+    gridXZ.rotation.x = Math.PI / 2;
+    scene.add(gridXZ);
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xffffff);
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+
+
+    document.body.appendChild(renderer.domElement);
+
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+
+function animate() {
+    update();
+    requestAnimationFrame(animate);
+    render();
+}
+
+function update() {
+    keyboard.update();
+    customgeom.geometry.verticesNeedUpdate = true;
+}
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+window.focus();
+</script>
+</body>
+
+</html>
