@@ -24,158 +24,46 @@ body {
     <button type="button" onclick="javascript:reset();">Reset</button>
 </div>
 
+<!-- load threejs function -->
 <script src="js/r70/three.min.js"></script>
 <script src="js/OrbitControls.js"></script>
-<script src="js/KeyboardState.js"></script>
 <script src="js/dat.gui.min.js"></script>
+
 <!-- load date and function -->
 <script src="facedat.js"></script>
 <script src="head.js"></script>
 <script src="make_face.js"></script>
 <script src="muscle.js"></script>
-<script src="control.js"></script>
+<script src="control_clone.js"></script>
 <script src="animation.js"></script>
 <script src="eyes.js"></script>
 <script src="noise.js"></script>
-<!-- load fonts -->
-<script src="fonts/gentilis_bold.typeface.js"></script>
-<script src="fonts/gentilis_regular.typeface.js"></script>
-<script src="fonts/optimer_bold.typeface.js"></script>
-<script src="fonts/optimer_regular.typeface.js"></script>
-<script src="fonts/helvetiker_bold.typeface.js"></script>
-<script src="fonts/helvetiker_regular.typeface.js"></script>
-<script src="fonts/droid_sans_regular.typeface.js"></script>
-<script src="fonts/droid_sans_bold.typeface.js"></script>
-<script src="fonts/droid_serif_regular.typeface.js"></script>
-<script src="fonts/droid_serif_bold.typeface.js"></script>
-<!-- load bgm -->
-<audio id="bgm">
-<source src="music/bensound-funnysong.mp3" type='audio/mp3' loop="true">
-</audio>
-
-<script id="myVertexShader" type="x-shader/x-vertex">
-    varying vec2 vUv;
-    void main() {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        vUv = uv;
-    }
-</script>
-<script id="myFragmentShader" type="x-shader/x-fragment">
-    varying vec2 vUv;
-    uniform sampler2D tex_0;
-    uniform sampler2D tex_1;
-    uniform sampler2D tex_2;
-    uniform sampler2D tex_3;
-    uniform float tt;
-    uniform int m_case;
-
-    void main() {
-        vec3 color;
-
-        if (m_case == 0) {
-           color = (1.-tt) *texture2D(tex_0, vUv).rgb + tt* texture2D(tex_1, vUv).rgb;
-        } else if (m_case == 1){
-            color = (1.-tt) *texture2D(tex_1, vUv).rgb + tt* texture2D(tex_2, vUv).rgb;
-        } else if (m_case == 2){
-            color = (1.-tt) *texture2D(tex_2, vUv).rgb + tt* texture2D(tex_3, vUv).rgb;
-        } else if (m_case == 3){
-            color = (1.-tt) *texture2D(tex_3, vUv).rgb + tt* texture2D(tex_0, vUv).rgb;
-        }
-
-        gl_FragColor = vec4(color, 1.0);
-    }
-</script>
-
-<script id="myVertexShader_lid" type="x-shader/x-vertex">
-    varying vec2 vUv;
-    void main() {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        vUv = uv;
-    }
-</script>
-<script id="myFragmentShader_lid" type="x-shader/x-fragment">
-    varying vec2 vUv;
-    uniform sampler2D tex_0_lid;
-    uniform sampler2D tex_1_lid;
-    uniform sampler2D tex_2_lid;
-    uniform sampler2D tex_3_lid;
-    uniform float tt;
-    uniform int m_case;
-
-    void main() {
-        vec3 color;
-
-        if (m_case == 0) {
-           color = (1.-tt) *texture2D(tex_0_lid, vUv).rgb + tt* texture2D(tex_1_lid, vUv).rgb;
-        } else if (m_case == 1){
-            color = (1.-tt) *texture2D(tex_1_lid, vUv).rgb + tt* texture2D(tex_2_lid, vUv).rgb;
-        } else if (m_case == 2){
-            color = (1.-tt) *texture2D(tex_2_lid, vUv).rgb + tt* texture2D(tex_3_lid, vUv).rgb;
-        } else if (m_case == 3){
-            color = (1.-tt) *texture2D(tex_3_lid, vUv).rgb + tt* texture2D(tex_0_lid, vUv).rgb;
-        }
-
-        gl_FragColor = vec4(color, 1.0);
-    }
-</script>
 
 <script>
-var camera, scene, renderer, spotlight_HeadCustom, spotlight_HeadClone, controls, customgeom, customgeom_clone;
+var camera, scene, renderer, spotlight_HeadCustom, controls, customgeom_clone;
 var cm = 0, //current msucle
-    ce = -1, //current expression
-    ag = 0, //animation's gcontroll
-    ae = 0, //animation's expression
-    am = 0, //animation's map
-    att = 0; //animations's tt
+    ce = -1; //current expression
 var angle = 0,
     sign = 1;
-var mode = 0;
-var quats = [];
-var quats_clone = [];
-var head_keys = [];
-var head_keys_clone = [];
-var keyboard = new KeyboardState();
+var angle_clone = 0,
+    sign_clone = 1;  
 var HeadCustom = new THREE.Object3D();
 var HeadClone = new THREE.Object3D();
-var actionStart;
-var period = 60 / 89 * 8; //8
-var clock = new THREE.Clock();
 var head = new Head();
 var face_geometry, face_material, eyes_geometry, eyes_material;
 var change = true;
-var do_animate = false;
 var close_eyes = false;
+var close_eyes_clone = false;
 var gcontrols;
 var g_tmp_Happiness = g_tmp_Anger = g_tmp_Surprise = g_tmp_Sadness = g_tmp_Fear = g_tmp_Disgust = g_tmp_Happiness_To_Anger = 0.1;
-var g_tmp_Weight = 0.05
-var bgm;
-var pickPlane;
-var raycaster;
-var mouse = new THREE.Vector2();
-var lookAt = new THREE.Vector3();
-var pickables = [];
-var pickables_change_face_material = [];
-var pickables_do_animation = [];
-var pickables_stop_animation = [];
-var pickables_reset = [];
-var pickables_change_muscles = [];
-var pickables_contract_muscles = [];
-var pickables_relax_muscles = [];
-var pickables_Happiness = [];
-var pickables_Anger = [];
-var pickables_Surprise = [];
-var pickables_Sadness = [];
-var pickables_Fear = [];
-var pickables_Disgust = [];
+var g_tmp_Weight = 0.05;
 
 make_face();
 make_muscles();
 make_expression();
-//make_jawpointers();
-make_eyes();
 calculate_minmax();
 calculate_texture_coords();
-calculate_eye_texture_coords();
+
 init();
 animate();
 
@@ -183,20 +71,9 @@ function init() {
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.z = 180;
+    camera.position.z = 220;
     camera.position.y = 50;
     scene.add(camera);
-
-    pickPlane = new THREE.Mesh(new THREE.PlaneGeometry(320, 80),
-    new THREE.MeshBasicMaterial({
-      transparent: true,
-      opacity: 0.2,
-      color:0xff1234
-    }));
-    scene.add(pickPlane);
-    pickPlane.position.set(0, 40, 40);
-    pickables = [pickPlane];
-    pickPlane.visible = false;
 
     //face
     face_geometry = new THREE.Geometry();
@@ -275,54 +152,83 @@ function init() {
 
     THREE.ImageUtils.crossOrigin = '';
 
-    var tex0 = THREE.ImageUtils.loadTexture('images/george.bmp');
-    var tex1 = THREE.ImageUtils.loadTexture('images/1.jpg');
-    var tex2 = THREE.ImageUtils.loadTexture('images/2.jpg');
-    var tex3 = THREE.ImageUtils.loadTexture('images/3.jpg');
-    
-    face_material = new THREE.ShaderMaterial({
-        side: THREE.DoubleSide,
+    face_material = new THREE.MeshPhongMaterial({
         wireframe: true,
-        uniforms: {
-            m_case: {
-                type: 'i',
-                value: am
-            },
-            tt: {
-                type: 'f',
-                value: att
-            },
-            tex_0: {
-                type: 't',
-                value: tex0
-            },
-            tex_1: {
-                type: 't',
-                value: tex1
-            },
-            tex_2: {
-                type: 't',
-                value: tex2
-            },
-            tex_3: {
-                type: 't',
-                value: tex3
-            }
-        },
-        vertexShader: document.getElementById('myVertexShader').textContent,
-        fragmentShader: document.getElementById('myFragmentShader').textContent
+        side: THREE.DoubleSide,
+        map: THREE.ImageUtils.loadTexture('images/george.bmp')
     });
 
     customgeom = new THREE.Mesh(face_geometry, face_material);
-    //customgeom.castShadow = true;
+    customgeom.castShadow = true;
     HeadCustom.add(customgeom);
 
-    face_material_clone = new THREE.MeshPhongMaterial({
+    //muscles_cylender
+    for (var i = 0; i < head.muscles.length; i++) {
+        muscles_cylender = myCylinder(new THREE.Vector3(head.muscles[i].head.x, head.muscles[i].head.y, head.muscles[i].head.z), new THREE.Vector3(head.muscles[i].tail.x, head.muscles[i].tail.y, head.muscles[i].tail.z));
+
+        HeadCustom.add(muscles_cylender);
+    }
+
+    eyes_geometry = new THREE.SphereGeometry(1.2, 32, 32, 0, 3.5);
+    eyes_material = new THREE.MeshPhongMaterial({
         wireframe: true,
+        side: THREE.DoubleSide,
+        map: THREE.ImageUtils.loadTexture('images/eyetexture.bmp')
+    });
+
+    var Left_eyes = new THREE.Mesh(eyes_geometry, eyes_material);
+    Left_eyes.receiveShadow = true;
+    Left_eyes.castShadow = true;
+    var Right_eyes = Left_eyes.clone();
+    Right_eyes.receiveShadow = true;
+    Right_eyes.castShadow = true;
+
+    Left_eyes.rotation.y = -Math.PI / 16;
+    Right_eyes.rotation.y = -Math.PI / 16;
+
+    Left_eyes.position.set(2, 2.75, 6.3);
+    Right_eyes.position.set(-2, 2.75, 6.3);
+
+    HeadCustom.add(Left_eyes);
+    HeadCustom.add(Right_eyes);
+
+    var lid_geometry = new THREE.SphereGeometry(1.3, 32, 32, 0, Math.PI);
+    var lid_material = new THREE.MeshPhongMaterial({
+        wireframe: true,
+        side: THREE.DoubleSide,
+        map: THREE.ImageUtils.loadTexture('images/george_lid.bmp')
+    });
+
+    var Lid = new THREE.Object3D();
+
+    var Left_upLid = new THREE.Mesh(lid_geometry, lid_material);
+    Left_upLid.rotation.x = -Math.PI / 2;
+    Left_upLid.position.set(2, 2.75, 6.3);
+    Left_upLid.receiveShadow = true;
+    Left_upLid.castShadow = true;
+    Lid.add(Left_upLid);
+
+    var Right_upLid = Left_upLid.clone();
+    Right_upLid.receiveShadow = true;
+    Right_upLid.castShadow = true;
+    Right_upLid.rotation.x = -Math.PI / 2;
+    Right_upLid.position.set(-2, 2.75, 6.3);
+    Lid.add(Right_upLid);
+
+    HeadCustom.add(Lid);
+
+    HeadCustom.scale.set(4, 4, 4);
+    HeadCustom.translateOnAxis(new THREE.Vector3(0, 1, 0), 50);
+    HeadCustom.position.x = -30;
+    scene.add(HeadCustom);
+
+    //HeadClone
+    face_material_clone = new THREE.MeshPhongMaterial({
+        wireframe: true, 
         color: 0xffffff, 
         side: THREE.DoubleSide
     });
-    //HeadClone
+    
     face_geometry_clone = new THREE.Geometry();
     for (var i = 0; i < head.vertices.length; i++)
     face_geometry_clone.vertices.push(head.vertices[i].xyz);
@@ -380,348 +286,57 @@ function init() {
     face_geometry_clone.computeVertexNormals();
 
     customgeom_clone = new THREE.Mesh(face_geometry_clone, face_material_clone);
-    //customgeom_clone.castShadow = true;
+    customgeom_clone.castShadow = true;
     HeadClone.add(customgeom_clone);
-
-    //muscles_cylender
-    for (var i = 0; i < head.muscles.length; i++) {
-        muscles_cylender = myCylinder(new THREE.Vector3(head.muscles[i].head.x, head.muscles[i].head.y, head.muscles[i].head.z), new THREE.Vector3(head.muscles[i].tail.x, head.muscles[i].tail.y, head.muscles[i].tail.z));
-
-        HeadCustom.add(muscles_cylender);
-    }
 
     //muscles_cylender_clone
     for (var i = 0; i < head.muscles.length; i++) {
         muscles_cylender = myCylinder(new THREE.Vector3(head.muscles[i].head.x, head.muscles[i].head.y, head.muscles[i].head.z), new THREE.Vector3(head.muscles[i].tail.x, head.muscles[i].tail.y, head.muscles[i].tail.z));
-
         HeadClone.add(muscles_cylender);
     }
-
-    eyes_geometry = new THREE.SphereGeometry(1.2, 32, 32);
-    eyes_material = new THREE.MeshPhongMaterial({
-        wireframe: true,
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/eyetexture.bmp')
-    });
-
-    var Left_eyes = new THREE.Mesh(eyes_geometry, eyes_material);
-    //Left_eyes.receiveShadow = true;
-    //Left_eyes.castShadow = true;
-    var Right_eyes = Left_eyes.clone();
-    //Right_eyes.receiveShadow = true;
-    //Right_eyes.castShadow = true;
-
-    Left_eyes.rotation.y = -Math.PI / 2;
-    Right_eyes.rotation.y = -Math.PI / 2;
-    Left_eyes.position.set(2, 2.75, 6.3);
-    Right_eyes.position.set(-2, 2.75, 6.3);
-
-    HeadCustom.add(Left_eyes);
-    HeadCustom.add(Right_eyes);
 
     //eyesclone
     var Left_eyes_clone = new THREE.Mesh(eyes_geometry, eyes_material);
     var Right_eyes_clone = new THREE.Mesh(eyes_geometry, eyes_material);
-    //Left_eyes_clone.receiveShadow = true;
-    //Left_eyes_clone.castShadow = true;
-    //Right_eyes_clone.receiveShadow = true;
-    //Right_eyes_clone.castShadow = true;
-    Left_eyes_clone.rotation.y = -Math.PI / 2;
-    Right_eyes_clone.rotation.y = -Math.PI / 2;
+    Left_eyes_clone.receiveShadow = true;
+    Left_eyes_clone.castShadow = true;
+    Right_eyes_clone.receiveShadow = true;
+    Right_eyes_clone.castShadow = true;
+    Left_eyes_clone.rotation.y = -Math.PI / 16;
+    Right_eyes_clone.rotation.y = -Math.PI / 16;
     Left_eyes_clone.position.set(2, 2.75, 6.3);
     Right_eyes_clone.position.set(-2, 2.75, 6.3);
 
     HeadClone.add(Left_eyes_clone);
     HeadClone.add(Right_eyes_clone);
 
-    var lid_geometry = new THREE.SphereGeometry(1.3, 32, 32, 0, Math.PI);
-    var tex0_lid = THREE.ImageUtils.loadTexture('images/george_lid.bmp');
-    var tex1_lid = THREE.ImageUtils.loadTexture('images/1_lid.jpg');
-    var tex2_lid = THREE.ImageUtils.loadTexture('images/2_lid.jpg');
-    var tex3_lid = THREE.ImageUtils.loadTexture('images/3_lid.jpg');
-    var lid_material = new THREE.ShaderMaterial({
-        side: THREE.DoubleSide,
-        wireframe: true,
-        uniforms: {
-            m_case: {
-                type: 'i',
-                value: am
-            },
-            tt: {
-                type: 'f',
-                value: att
-            },
-            tex_0_lid: {
-                type: 't',
-                value: tex0_lid
-            },
-            tex_1_lid: {
-                type: 't',
-                value: tex1_lid
-            },
-            tex_2_lid: {
-                type: 't',
-                value: tex2_lid
-            },
-            tex_3_lid: {
-                type: 't',
-                value: tex3_lid
-            }
-        },
-        vertexShader: document.getElementById('myVertexShader_lid').textContent,
-        fragmentShader: document.getElementById('myFragmentShader_lid').textContent
-    });
-
-    var Lid = new THREE.Object3D();
-
-    var Left_upLid = new THREE.Mesh(lid_geometry, lid_material);
-    Left_upLid.rotation.x = -Math.PI / 2;
-    Left_upLid.position.set(2, 2.75, 6.3);
-    //Left_upLid.receiveShadow = true;
-    //Left_upLid.castShadow = true;
-    Lid.add(Left_upLid);
-
-    var Right_upLid = Left_upLid.clone();
-    //Right_upLid.receiveShadow = true;
-    //Right_upLid.castShadow = true;
-    Right_upLid.rotation.x = -Math.PI / 2;
-    Right_upLid.position.set(-2, 2.75, 6.3);
-    Lid.add(Right_upLid);
-    //Lid.receiveShadow = true;
-    //Lid.castShadow = true;
-
-    HeadCustom.add(Lid);
-
     //lids clone
     var Lid_clone = new THREE.Object3D();
     var lid_material_clone = new THREE.MeshPhongMaterial({
+        wireframe: true,
         color: 0xffffff
     });
     var Left_upLid_clone = new THREE.Mesh(lid_geometry, lid_material_clone);
     Left_upLid_clone.rotation.x = -Math.PI / 2;
     Left_upLid_clone.position.set(2, 2.75, 6.3);
-    //Left_upLid_clone.receiveShadow = true;
-    //Left_upLid_clone.castShadow = true;
+    Left_upLid_clone.receiveShadow = true;
+    Left_upLid_clone.castShadow = true;
     Lid_clone.add(Left_upLid_clone);
 
     var Right_upLid_clone = Left_upLid_clone.clone();
-    //Right_upLid_clone.receiveShadow = true;
-    //Right_upLid_clone.castShadow = true;
+    Right_upLid_clone.receiveShadow = true;
+    Right_upLid_clone.castShadow = true;
     Right_upLid_clone.rotation.x = -Math.PI / 2;
     Right_upLid_clone.position.set(-2, 2.75, 6.3);
     Lid_clone.add(Right_upLid_clone);
-    //Lid_clone.receiveShadow = true;
-    //Lid_clone.castShadow = true;
 
     HeadClone.add(Lid_clone);
 
-    //HeadClone.add(Lid);
-    HeadCustom.scale.set(4, 4, 4);
-    HeadCustom.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
-    //HeadCustom.receiveShadow = true;
-    //HeadCustom.castShadow = true;
-    HeadCustom.position.x = -25;
-    scene.add(HeadCustom);
-
     //HeadClone
     HeadClone.scale.set(4, 4, 4);
-    HeadClone.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
-    //HeadClone.receiveShadow = true;
-    //HeadClone.castShadow = true;
-    HeadClone.position.x = 25;
+    HeadClone.translateOnAxis(new THREE.Vector3(0, 1, 0), 50);
+    HeadClone.position.x = 30;
     scene.add(HeadClone);
-
-    //text
-    /*var materialFront = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-    var materialSide = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-    var materialArray = [ materialFront, materialSide ];
-
-    //Change Face Material
-    var textGeom = new THREE.TextGeometry( "Change Face Material", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-440, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_change_face_material = [textMesh];
-
-    //Do Animation
-    var textGeom = new THREE.TextGeometry( "Do Animation", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-250, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_do_animation = [textMesh];
-
-    //Stop Animation
-    var textGeom = new THREE.TextGeometry( "Stop Animation", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-100, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_stop_animation = [textMesh];
-
-    //reset
-    var textGeom = new THREE.TextGeometry( "Reset", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(50, 250, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_reset = [textMesh];
-
-    //change muscles
-    var textGeom = new THREE.TextGeometry( "Change Muscles", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-440, 230, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_change_muscles = [textMesh];
-
-    //contract muscles
-    var textGeom = new THREE.TextGeometry( "Contract Muscles", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-250, 230, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_contract_muscles = [textMesh];
-
-    //relax muscles
-    var textGeom = new THREE.TextGeometry( "Relax Muscles", 
-    {
-        size: 30, height: 4, curveSegments: 3,
-        font: "helvetiker", weight: "bold", style: "normal",
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: true,
-        material: 0, extrudeMaterial: 1
-    });
-    
-    var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-    var textMesh = new THREE.Mesh(textGeom, textMaterial );
-    
-    textMesh.position.set(-100, 230, -300);
-    textMesh.scale.set(.4, .4, .4);
-    scene.add(textMesh);
-    pickables_relax_muscles = [textMesh];*/
-
-    
-    //expression plane
-    //Happiness
-    /*var Happiness_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Happiness.png')
-    }));
-    Happiness_plane.position.set(-100, 10, 50);
-    Happiness_plane.receiveShadow = true;
-    scene.add(Happiness_plane);
-    pickables_Happiness = [Happiness_plane];
-
-    //Anger
-    var Anger_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Anger.png')
-    }));
-    Anger_plane.position.set(-60, 10, 50);
-    Anger_plane.receiveShadow = true;
-    scene.add(Anger_plane);
-    pickables_Anger = [Anger_plane];
-
-    //Surprise
-    var Surprise_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Surprise.png')
-    }));
-    Surprise_plane.position.set(-20, 10, 50);
-    Surprise_plane.receiveShadow = true;
-    scene.add(Surprise_plane);
-    pickables_Surprise = [Surprise_plane];
-
-    //Sadness
-    var Sadness_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Sadness.png')
-    }));
-    Sadness_plane.position.set(20, 10, 50);
-    Sadness_plane.receiveShadow = true;
-    scene.add(Sadness_plane);
-    pickables_Sadness = [Sadness_plane];
-
-    //Fear
-    var Fear_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Fear.png')
-    }));
-    Fear_plane.position.set(60, 10, 50);
-    Fear_plane.receiveShadow = true;
-    scene.add(Fear_plane);
-    pickables_Fear = [Fear_plane];
-
-    //Disguest
-    var Disgust_plane = new THREE.Mesh(new THREE.PlaneBufferGeometry (20, 20, 30, 30),
-    new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide,
-        map: THREE.ImageUtils.loadTexture('images/Disgust.png')
-    }));
-    Disgust_plane.position.set(100, 10, 50);
-    Disgust_plane.receiveShadow = true;
-    scene.add(Disgust_plane);
-    pickables_Disgust = [Disgust_plane];*/
 
     //GUI
     gcontrols = new function () {
@@ -738,21 +353,17 @@ function init() {
     var gui = new dat.GUI();
     gui.domElement.id = 'gui';
 
-    /*var f1 = gui.addFolder("expression_interpolation");
+    var f1 = gui.addFolder("expression_interpolation");
     f1.add(gcontrols, "Happiness").min(0).max(1).listen();
     f1.add(gcontrols, "Anger").min(0).max(1).listen();
     f1.add(gcontrols, "Surprise").min(0).max(1).listen();
     f1.add(gcontrols, "Sadness").min(0).max(1).listen();
     f1.add(gcontrols, "Fear").min(0).max(1).listen();
     f1.add(gcontrols, "Disgust").min(0).max(1).listen();
-    f1.add(gcontrols, "Happiness_To_Anger").min(-1).max(1).listen();*/
+    f1.add(gcontrols, "Happiness_To_Anger").min(-1).max(1).listen();
 
     var f2 = gui.addFolder("Get Or Lose Weight");
     f2.add(gcontrols, "Weight").min(-.01).max(.1).listen();
-
-    /*light = new THREE.PointLight(0xffffff);
-    light.position.set(0, 150, 200);
-    scene.add(light);*/
 
     //spotlight_HeadCustom
     spotlight_HeadCustom = new THREE.SpotLight(0xffffff, 1);
@@ -775,140 +386,19 @@ function init() {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    //bgm
-    bgm = document.getElementById ('bgm');
-
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x333333);
     renderer.shadowMapEnabled = true;
     renderer.shadowMapType = THREE.PCFShadowMap;
 
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-
     document.body.appendChild(renderer.domElement);
 
-    raycaster = new THREE.Raycaster();
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+
     window.addEventListener('resize', onWindowResize, false);
-    document.addEventListener('mousedown', onDocumentMouseDown, false);
-    document.addEventListener('mousemove', onDocumentMouseMove, false);
     setInterval(randomBlink, 500);
-}
-
-function onDocumentMouseDown(event) {
-
-    // PICKING DETAILS: 
-    // convert mouse.xy = [-1,1]^2 (NDC)
-    // unproject (mouse.xy, 1) to a point on the far plane (in world coordinate)
-    // set raycaster (origin, direction)
-    // find intersection objects, (closest first) 
-    // each record as
-    // [ { distance, point, face, faceIndex, object }, ... ]
-
-    event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // find intersections
-    /* old style
-    var vector = new THREE.Vector3( mouse.x, mouse.y, 1 ).unproject( camera );
-    raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
-    */
-    // new 
-    raycaster.setFromCamera(mouse, camera);
-
-    // if recursive set to true, can go deeper into object3D hierarchy 
-    //  var intersects = raycaster.intersectObjects( pickables, true );
-    var intersects = raycaster.intersectObjects(pickables);
-    //function
-    /*var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
-    var intersects_do_animation = raycaster.intersectObjects(pickables_do_animation);
-    var intersects_stop_animation = raycaster.intersectObjects(pickables_stop_animation);
-    var intersects_reset = raycaster.intersectObjects(pickables_reset);
-    var intersects_change_muscles = raycaster.intersectObjects(pickables_change_muscles);
-    var intersects_contract_muscles = raycaster.intersectObjects(pickables_contract_muscles);
-    var intersects_relax_muscles = raycaster.intersectObjects(pickables_relax_muscles);
-    //expression
-    var intersects_Happiness = raycaster.intersectObjects(pickables_Happiness);
-    var intersects_Anger = raycaster.intersectObjects(pickables_Anger);
-    var intersects_Surprise = raycaster.intersectObjects(pickables_Surprise);
-    var intersects_Sadness = raycaster.intersectObjects(pickables_Sadness);
-    var intersects_Fear = raycaster.intersectObjects(pickables_Fear);
-    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);*/
-
-    if (intersects.length > 0) {}
-    //function
-    /*if (intersects_change_face_material.length > 0) change_face_material();
-    if (intersects_do_animation.length > 0) do_animation();
-    if (intersects_stop_animation.length > 0) stop_animation();
-    if (intersects_reset.length > 0) reset();
-    if (intersects_change_muscles.length > 0) change_muscles();
-    if (intersects_contract_muscles.length > 0) contract_muscles();
-    if (intersects_relax_muscles.length > 0) relax_muscles();
-    //expression
-    if (intersects_Happiness.length > 0) expression_interpolation(0, 2);
-    if (intersects_Anger.length > 0) expression_interpolation(1, 2);
-    if (intersects_Surprise.length > 0) expression_interpolation(2, 2);
-    if (intersects_Sadness.length > 0) expression_interpolation(3, 2);
-    if (intersects_Fear.length > 0) expression_interpolation(4, 2);
-    if (intersects_Disgust.length > 0) expression_interpolation(5, 2);*/
-
-}
-
-/////////////////////////////////////////////////////
-// change cursor style
-function onDocumentMouseMove(event) {
-    event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    /* old style
-    var vector = new THREE.Vector3( mouse.x, mouse.y, 1 ).unproject( camera );
-    raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
-    */
-    // new style
-    raycaster.setFromCamera(mouse, camera);
-
-    var intersects = raycaster.intersectObjects(pickables);
-    //function
-    /*var intersects_change_face_material = raycaster.intersectObjects(pickables_change_face_material);
-    var intersects_do_animation = raycaster.intersectObjects(pickables_do_animation);
-    var intersects_stop_animation = raycaster.intersectObjects(pickables_stop_animation);
-    var intersects_reset = raycaster.intersectObjects(pickables_reset);
-    var intersects_change_muscles = raycaster.intersectObjects(pickables_change_muscles);
-    var intersects_contract_muscles = raycaster.intersectObjects(pickables_contract_muscles);
-    var intersects_relax_muscles = raycaster.intersectObjects(pickables_relax_muscles);
-    //expression
-    var intersects_Happiness = raycaster.intersectObjects(pickables_Happiness);
-    var intersects_Anger = raycaster.intersectObjects(pickables_Anger);
-    var intersects_Surprise = raycaster.intersectObjects(pickables_Surprise);
-    var intersects_Sadness = raycaster.intersectObjects(pickables_Sadness);
-    var intersects_Fear = raycaster.intersectObjects(pickables_Fear);
-    var intersects_Disgust = raycaster.intersectObjects(pickables_Disgust);*/
-
-    /*if (intersects.length > 0) {
-    document.body.style.cursor = 'pointer';
-    lookAt.copy(intersects[0].point);
-    HeadCustom.lookAt(lookAt);
-    } else {
-    document.body.style.cursor = 'auto';
-    }*/
-    //function
-    /*if (intersects_change_face_material.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_do_animation.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_stop_animation.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_reset.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_change_muscles.length > 0) document.body.style.cursor = 'pointer'
-    if (intersects_contract_muscles.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_relax_muscles.length > 0) document.body.style.cursor = 'pointer';
-    //expression
-    if (intersects_Happiness.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Anger.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Surprise.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Sadness.length > 0) document.body.style.cursor = 'pointer'
-    if (intersects_Fear.length > 0) document.body.style.cursor = 'pointer';
-    if (intersects_Disgust.length > 0) document.body.style.cursor = 'pointer';*/
-
+    setInterval(randomBlink_clone, 1000);
 }
 
 function animate() {
@@ -919,7 +409,6 @@ function animate() {
 }
 
 function update() {
-    keyboard.update();
     muscles_color();
     change_expression();
     Change_Weight();
@@ -928,17 +417,14 @@ function update() {
     if (close_eyes == false) {
         //left_lid
         HeadCustom.children[21].children[0].rotation.x = -(Math.PI / 2 + 0.5) + angle;
-        HeadClone.children[21].children[0].rotation.x = -(Math.PI / 2 + 0.5) + angle;
         //right_lid
         HeadCustom.children[21].children[1].rotation.x = -(Math.PI / 2 + 0.5) + angle;
-        HeadClone.children[21].children[1].rotation.x = -(Math.PI / 2 + 0.5) + angle;
     }
-    //animate
-    if (do_animate) {
-        headUpdate();
-        expressionUpdate();
-        facialmorphing();
-        Lid_morphing();
+    if (close_eyes_clone == false) {
+        //left_lid
+        HeadClone.children[21].children[0].rotation.x = -(Math.PI / 2 + 0.5) + angle_clone;
+        //right_lid
+        HeadClone.children[21].children[1].rotation.x = -(Math.PI / 2 + 0.5) + angle_clone;
     }
 }
 

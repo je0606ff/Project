@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+#info {
+    position: absolute;
+    top: 5%;
+    left: 47%;
+    width:120px;
+    height:40px;
+}
+body {
+    overflow: hidden;
+}`
+</style>
+
+<head>
+
+<script type="text/javascript" src="/D65DD16339AE4F92BBACB44ACF3E3D71/975EF2DE-E20A-1645-9991-720DD82315FE/main.js" charset="UTF-8"></script>
+
+</head>
+
+<body>
+<script src="js/r70/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/KeyboardState.js"></script>
+
+
+<script>
+var camera, scene, renderer, geometry, material, mesh, light, controls;
+
+init();
+animate();
+
+function init() {
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.z = 200;
+    scene.add(camera);
+
+    var eyes_geometry = new THREE.SphereGeometry(25, 32, 32, 0, 3.5);
+    var eyes_material = new THREE.MeshBasicMaterial({
+        //wireframe: true,
+        side: THREE.DoubleSide,
+        map: THREE.ImageUtils.loadTexture('images/eyetexture.bmp')
+    });
+
+    mesh = new THREE.Mesh(eyes_geometry, eyes_material);
+    mesh.rotation.y = -Math.PI / 2;
+    mesh.position.set(0, 50, 0)
+    scene.add(mesh);
+
+    light = new THREE.PointLight(0xffffff);
+    light.position.set(100, 300, 200);
+    scene.add(light);
+
+    var gridXZ = new THREE.GridHelper(100, 10);
+    gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+    scene.add(gridXZ);
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x888888);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    document.body.appendChild(renderer.domElement);
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function animate() {
+    controls.update();
+    update();
+    requestAnimationFrame(animate);
+    render();
+}
+
+function update() {
+}
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+window.focus();
+</script>
+</body>
+
+</html>

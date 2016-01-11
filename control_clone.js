@@ -40,10 +40,21 @@ function muscles_color() {
             HeadCustom.children[i + 1].children[0].material.color.b = 1;
             HeadCustom.children[i + 1].children[0].material.color.g = 0;
             HeadCustom.children[i + 1].children[0].material.color.r = 0;
+            if (HeadClone.children[i + 1] != undefined) {
+                HeadClone.children[i + 1].children[0].material.color.b = 1;
+                HeadClone.children[i + 1].children[0].material.color.g = 0;
+                HeadClone.children[i + 1].children[0].material.color.r = 0;
+            }
+
         } else {
             HeadCustom.children[i + 1].children[0].material.color.b = 0;
             HeadCustom.children[i + 1].children[0].material.color.g = 0;
             HeadCustom.children[i + 1].children[0].material.color.r = 1;
+            if (HeadClone.children[i + 1] != undefined) {
+                HeadClone.children[i + 1].children[0].material.color.b = 0;
+                HeadClone.children[i + 1].children[0].material.color.g = 0;
+                HeadClone.children[i + 1].children[0].material.color.r = 1;
+            }
         }
     }
 }
@@ -51,30 +62,39 @@ function muscles_color() {
 function change_face_material() {
     if (change) {
         HeadCustom.children[0].material.wireframe = false;
-
+        HeadClone.children[0].material.wireframe = false;
         //lid
         HeadCustom.children[21].children[0].material.wireframe = false;
         HeadCustom.children[21].children[1].material.wireframe = false;
+        HeadClone.children[21].children[0].material.wireframe = false;
+        HeadClone.children[21].children[1].material.wireframe = false;
 
         for (var i = 0; i < head.muscles.length; i++) {
             HeadCustom.children[i + 1].visible = false;
+            HeadClone.children[i + 1].visible = false;
         }
         //eye
         for (var i = 0; i < 2; i++) {
             HeadCustom.children[i + 19].material.wireframe = false;
+            HeadClone.children[i + 19].material.wireframe = false;
         }
     } else {
         HeadCustom.children[0].material.wireframe = true;
+        HeadClone.children[0].material.wireframe = true;
         //lid
         HeadCustom.children[21].children[0].material.wireframe = true;
         HeadCustom.children[21].children[1].material.wireframe = true;
+        HeadClone.children[21].children[0].material.wireframe = true;
+        HeadClone.children[21].children[1].material.wireframe = true;
 
         for (var i = 0; i < head.muscles.length; i++) {
             HeadCustom.children[i + 1].visible = true;
+            HeadClone.children[i + 1].visible = true;
         }
         //eye
         for (var i = 0; i < 2; i++) {
             HeadCustom.children[i + 19].material.wireframe = true;
+            HeadClone.children[i + 19].material.wireframe = true;
         }
     }
     change = !change;
@@ -130,6 +150,7 @@ function do_animation() {
 function stop_animation() {
     do_animate = false;
     HeadCustom.quaternion.setFromEuler(new THREE.Euler(0, 0, 0));
+    HeadClone.quaternion.setFromEuler(new THREE.Euler(0, 0, 0));
     bgm.pause();
 }
 
@@ -215,8 +236,10 @@ function close_the_eyes() {
     close_eyes = true;
     //left_lid
     HeadCustom.children[21].children[0].rotation.x = (Math.PI / 4);
+    HeadClone.children[21].children[0].rotation.x = (Math.PI / 4);
     //right_lid
     HeadCustom.children[21].children[1].rotation.x = (Math.PI / 4);
+    HeadClone.children[21].children[1].rotation.x = (Math.PI / 4);
 }
 
 function open_the_eyes() {

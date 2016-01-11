@@ -35,35 +35,28 @@ body {
     <button type="button" onclick="javascript:stop_animation();">Stop The Animaion</button>
 </div>
 
+<!-- load threejs function -->
 <script src="js/r70/three.min.js"></script>
 <script src="js/OrbitControls.js"></script>
 <script src="js/KeyboardState.js"></script>
 <script src="js/dat.gui.min.js"></script>
+
 <!-- load date and function -->
 <script src="facedat.js"></script>
 <script src="head.js"></script>
 <script src="make_face.js"></script>
 <script src="muscle.js"></script>
-<script src="control.js"></script>
+<script src="control_clone.js"></script>
 <script src="animation.js"></script>
 <script src="eyes.js"></script>
 <script src="noise.js"></script>
-<!-- load fonts -->
-<script src="fonts/gentilis_bold.typeface.js"></script>
-<script src="fonts/gentilis_regular.typeface.js"></script>
-<script src="fonts/optimer_bold.typeface.js"></script>
-<script src="fonts/optimer_regular.typeface.js"></script>
-<script src="fonts/helvetiker_bold.typeface.js"></script>
-<script src="fonts/helvetiker_regular.typeface.js"></script>
-<script src="fonts/droid_sans_regular.typeface.js"></script>
-<script src="fonts/droid_sans_bold.typeface.js"></script>
-<script src="fonts/droid_serif_regular.typeface.js"></script>
-<script src="fonts/droid_serif_bold.typeface.js"></script>
+
 <!-- load bgm -->
 <audio id="bgm">
 <source src="music/bensound-funnysong.mp3" type='audio/mp3' loop="true">
 </audio>
 
+<!-- GLSL -->
 <script id="myVertexShader" type="x-shader/x-vertex">
     varying vec2 vUv;
     void main() {
@@ -91,11 +84,11 @@ body {
         } else if (m_case == 1){
             color = (1.-tt) *texture2D(tex_1, vUv).rgb + tt* texture2D(tex_2, vUv).rgb;
         } else if (m_case == 2){
-            color = (1.-tt) *texture2D(tex_2, vUv).rgb + tt* texture2D(tex_3, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_2, vUv).rgb + tt* texture2D(tex_4, vUv).rgb;
         } else if (m_case == 3){
-            color = (1.-tt) *texture2D(tex_3, vUv).rgb + tt* texture2D(tex_4, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_4, vUv).rgb + tt* texture2D(tex_3, vUv).rgb;
         } else if (m_case == 4){
-            color = (1.-tt) *texture2D(tex_4, vUv).rgb + tt* texture2D(tex_5, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_3, vUv).rgb + tt* texture2D(tex_5, vUv).rgb;
         } else if (m_case == 5){
             color = (1.-tt) *texture2D(tex_5, vUv).rgb + tt* texture2D(tex_0, vUv).rgb;
         }
@@ -131,11 +124,11 @@ body {
         } else if (m_case == 1){
             color = (1.-tt) *texture2D(tex_1_lid, vUv).rgb + tt* texture2D(tex_2_lid, vUv).rgb;
         } else if (m_case == 2){
-            color = (1.-tt) *texture2D(tex_2_lid, vUv).rgb + tt* texture2D(tex_3_lid, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_2_lid, vUv).rgb + tt* texture2D(tex_4_lid, vUv).rgb;
         } else if (m_case == 3){
-            color = (1.-tt) *texture2D(tex_3_lid, vUv).rgb + tt* texture2D(tex_4_lid, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_4_lid, vUv).rgb + tt* texture2D(tex_3_lid, vUv).rgb;
         } else if (m_case == 4){
-            color = (1.-tt) *texture2D(tex_4_lid, vUv).rgb + tt* texture2D(tex_5_lid, vUv).rgb;
+            color = (1.-tt) *texture2D(tex_3_lid, vUv).rgb + tt* texture2D(tex_5_lid, vUv).rgb;
         } else if (m_case == 5){
             color = (1.-tt) *texture2D(tex_5_lid, vUv).rgb + tt* texture2D(tex_0_lid, vUv).rgb;
         }
@@ -145,7 +138,7 @@ body {
 </script>
 
 <script>
-var camera, scene, renderer, spotlight_HeadCustom, controls, customgeom, customgeom_clone;
+var camera, scene, renderer, spotlight_HeadCustom, controls, customgeom;
 var cm = 0, //current msucle
     ce = -1, //current expression
     ag = 0, //animation's gcontroll
@@ -155,16 +148,12 @@ var cm = 0, //current msucle
     altt = 0; //animations's lid tt
 var angle = 0,
     sign = 1;
-var mode = 0;
 var quats = [];
-var quats_clone = [];
 var head_keys = [];
-var head_keys_clone = [];
-var keyboard = new KeyboardState();
 var HeadCustom = new THREE.Object3D();
 var HeadClone = new THREE.Object3D();
 var actionStart;
-var period = 60 / 89 * 8; //8
+var period = 60 / 89 * 8;
 var clock = new THREE.Clock();
 var head = new Head();
 var face_geometry, face_material, eyes_geometry, eyes_material;
@@ -184,11 +173,9 @@ var pickables = [];
 make_face();
 make_muscles();
 make_expression();
-//make_jawpointers();
-make_eyes();
 calculate_minmax();
 calculate_texture_coords();
-calculate_eye_texture_coords();
+
 init();
 animate();
 
@@ -338,20 +325,19 @@ function init() {
     });
 
     customgeom = new THREE.Mesh(face_geometry, face_material);
-    //customgeom.castShadow = true;
+    customgeom.castShadow = true;
     HeadCustom.add(customgeom);
 
     //muscles_cylender
     for (var i = 0; i < head.muscles.length; i++) {
         muscles_cylender = myCylinder(new THREE.Vector3(head.muscles[i].head.x, head.muscles[i].head.y, head.muscles[i].head.z), new THREE.Vector3(head.muscles[i].tail.x, head.muscles[i].tail.y, head.muscles[i].tail.z));
-
         HeadCustom.add(muscles_cylender);
     }
 
     for (var i = 0; i < head.muscles.length; i++) 
         HeadCustom.children[i + 1].visible = false;
 
-    eyes_geometry = new THREE.SphereGeometry(1.2, 32, 32);
+    eyes_geometry = new THREE.SphereGeometry(1.2, 32, 32, 0, 3.5);
     eyes_material = new THREE.MeshPhongMaterial({
         //wireframe: true,
         side: THREE.DoubleSide,
@@ -359,14 +345,15 @@ function init() {
     });
 
     var Left_eyes = new THREE.Mesh(eyes_geometry, eyes_material);
-    //Left_eyes.receiveShadow = true;
-    //Left_eyes.castShadow = true;
+    Left_eyes.receiveShadow = true;
+    Left_eyes.castShadow = true;
     var Right_eyes = Left_eyes.clone();
-    //Right_eyes.receiveShadow = true;
-    //Right_eyes.castShadow = true;
+    Right_eyes.receiveShadow = true;
+    Right_eyes.castShadow = true;
 
-    Left_eyes.rotation.y = -Math.PI / 2;
-    Right_eyes.rotation.y = -Math.PI / 2;
+    Left_eyes.rotation.y = -Math.PI / 16;
+    Right_eyes.rotation.y = -Math.PI / 16;
+
     Left_eyes.position.set(2, 2.75, 6.3);
     Right_eyes.position.set(-2, 2.75, 6.3);
 
@@ -427,47 +414,21 @@ function init() {
     var Left_upLid = new THREE.Mesh(lid_geometry, lid_material);
     Left_upLid.rotation.x = -Math.PI / 2;
     Left_upLid.position.set(2, 2.75, 6.3);
-    //Left_upLid.receiveShadow = true;
-    //Left_upLid.castShadow = true;
+    Left_upLid.receiveShadow = true;
+    Left_upLid.castShadow = true;
     Lid.add(Left_upLid);
 
     var Right_upLid = Left_upLid.clone();
-    //Right_upLid.receiveShadow = true;
-    //Right_upLid.castShadow = true;
+    Right_upLid.receiveShadow = true;
+    Right_upLid.castShadow = true;
     Right_upLid.rotation.x = -Math.PI / 2;
     Right_upLid.position.set(-2, 2.75, 6.3);
     Lid.add(Right_upLid);
-    //Lid.receiveShadow = true;
-    //Lid.castShadow = true;
 
     HeadCustom.add(Lid);
 
-    //lids clone
-    var Lid_clone = new THREE.Object3D();
-    var lid_material_clone = new THREE.MeshPhongMaterial({
-        color: 0xffffff
-    });
-    var Left_upLid_clone = new THREE.Mesh(lid_geometry, lid_material_clone);
-    Left_upLid_clone.rotation.x = -Math.PI / 2;
-    Left_upLid_clone.position.set(2, 2.75, 6.3);
-    //Left_upLid_clone.receiveShadow = true;
-    //Left_upLid_clone.castShadow = true;
-    Lid_clone.add(Left_upLid_clone);
-
-    var Right_upLid_clone = Left_upLid_clone.clone();
-    //Right_upLid_clone.receiveShadow = true;
-    //Right_upLid_clone.castShadow = true;
-    Right_upLid_clone.rotation.x = -Math.PI / 2;
-    Right_upLid_clone.position.set(-2, 2.75, 6.3);
-    Lid_clone.add(Right_upLid_clone);
-    //Lid_clone.receiveShadow = true;
-    //Lid_clone.castShadow = true;
-
-
     HeadCustom.scale.set(4, 4, 4);
     HeadCustom.translateOnAxis(new THREE.Vector3(0, 1, 0), 50);
-    //HeadCustom.receiveShadow = true;
-    //HeadCustom.castShadow = true;
     scene.add(HeadCustom);
 
     //GUI
@@ -481,6 +442,21 @@ function init() {
         this.Happiness_To_Anger = 0.1;
         this.Weight = 0.05;
     }
+
+    /*var gui = new dat.GUI();
+    gui.domElement.id = 'gui';
+
+    var f1 = gui.addFolder("expression_interpolation");
+    f1.add(gcontrols, "Happiness").min(0).max(1).listen();
+    f1.add(gcontrols, "Anger").min(0).max(1).listen();
+    f1.add(gcontrols, "Surprise").min(0).max(1).listen();
+    f1.add(gcontrols, "Sadness").min(0).max(1).listen();
+    f1.add(gcontrols, "Fear").min(0).max(1).listen();
+    f1.add(gcontrols, "Disgust").min(0).max(1).listen();
+    f1.add(gcontrols, "Happiness_To_Anger").min(-1).max(1).listen();
+
+    var f2 = gui.addFolder("Get Or Lose Weight");
+    f2.add(gcontrols, "Weight").min(-.01).max(.1).listen();*/
 
     //spotlight_HeadCustom
     spotlight_HeadCustom = new THREE.SpotLight(0xffffff, 1);
@@ -512,8 +488,6 @@ function init() {
     renderer.shadowMapEnabled = true;
     renderer.shadowMapType = THREE.PCFShadowMap;
 
-    //controls = new THREE.OrbitControls(camera, renderer.domElement);
-
     document.body.appendChild(renderer.domElement);
 
     raycaster = new THREE.Raycaster();
@@ -524,33 +498,15 @@ function init() {
 }
 
 function onDocumentMouseDown(event) {
-
-    // PICKING DETAILS: 
-    // convert mouse.xy = [-1,1]^2 (NDC)
-    // unproject (mouse.xy, 1) to a point on the far plane (in world coordinate)
-    // set raycaster (origin, direction)
-    // find intersection objects, (closest first) 
-    // each record as
-    // [ { distance, point, face, faceIndex, object }, ... ]
-
     event.preventDefault();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    // find intersections
-    /* old style
-    var vector = new THREE.Vector3( mouse.x, mouse.y, 1 ).unproject( camera );
-    raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
-    */
-    // new 
     raycaster.setFromCamera(mouse, camera);
 
-    // if recursive set to true, can go deeper into object3D hierarchy 
-    //  var intersects = raycaster.intersectObjects( pickables, true );
     var intersects = raycaster.intersectObjects(pickables);
     
     if (intersects.length > 0) {}
-
 }
 
 /////////////////////////////////////////////////////
@@ -560,35 +516,26 @@ function onDocumentMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    /* old style
-    var vector = new THREE.Vector3( mouse.x, mouse.y, 1 ).unproject( camera );
-    raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
-    */
-    // new style
     raycaster.setFromCamera(mouse, camera);
 
     var intersects = raycaster.intersectObjects(pickables);
    
-
-    /*if (intersects.length > 0) {
-    document.body.style.cursor = 'pointer';
-    lookAt.copy(intersects[0].point);
-    HeadCustom.lookAt(lookAt);
+    if (intersects.length > 0) {
+        document.body.style.cursor = 'pointer';
+        lookAt.copy(intersects[0].point);
+        HeadCustom.lookAt(lookAt);
     } else {
-    document.body.style.cursor = 'auto';
-    }*/
-
+        document.body.style.cursor = 'auto';
+    }
 }
 
 function animate() {
-    //controls.update();
     update();
     requestAnimationFrame(animate);
     render();
 }
 
 function update() {
-    keyboard.update();
     muscles_color();
     change_expression();
     Change_Weight();
@@ -608,7 +555,7 @@ function update() {
         Lid_morphing();
     }
 }
-console.log(HeadCustom)
+
 function render() {
     renderer.render(scene, camera);
 }

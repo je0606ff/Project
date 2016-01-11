@@ -142,7 +142,7 @@ function Lid_morphing() {
 
 function expressionUpdate() {
     if (ag <= 1.5) {
-        ag += 0.0075;
+        ag += 0.00375;
         expression_interpolation(ae, ag);
     } else {
         ag = 0;
@@ -175,11 +175,9 @@ function expressionUpdate_clown_cry_animation () {
 }
 
 function clown_animation_init() {
-
     //HeadCustom
     var euler0 = new THREE.Euler(.5, 0, 0); // start
     var euler1 = new THREE.Euler(-.1, 0, 0); // beat 1
-
 
     //HeadCustom
     head_keys_clown_laugh.push(0, 5);

@@ -28,6 +28,10 @@ body {
 <script src="head.js"></script>
 <script src="make_face.js"></script>
 <script src="muscle.js"></script>
+<script src="control.js"></script>
+<script src="animation.js"></script>
+<script src="eyes.js"></script>
+<script src="noise.js"></script>
 
 <script>
 var camera, scene, renderer, controls, customgeom;
@@ -36,15 +40,21 @@ var clock = new THREE.Clock();
 var head = new Head();
 
 make_face();
+make_muscles();
+make_expression();
+//make_jawpointers();
+make_eyes();
 calculate_minmax();
 calculate_texture_coords();
+calculate_eye_texture_coords();
 init();
 animate();
+
 
 function init() {
     scene = new THREE.Scene();
 
-    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
+    camera = new THREE.OrthographicCamera(-5, 5, 5, -5, -10, 10);
     camera.position.z = 10;
 
     
@@ -108,28 +118,24 @@ function init() {
     var texcoord1 = [];
     var texcoord2 = [];
     var texcoord3 = [];
-    for (var i = 0; i < face_geometry.faces.length; i++) {
+    for (var i = 0; i < head.leyepolygon.length; i++) {
         for (j = 0; j < 2; j++) {
-            var a = face_geometry.faces[i].a;
-            var b = face_geometry.faces[i].b;
-            var c = face_geometry.faces[i].c;
-            texcoord1[j] = head.vertices[a].tex[j];
-            texcoord2[j] = head.vertices[b].tex[j];
-            texcoord3[j] = head.vertices[c].tex[j];
+            texcoord1[j] = head.leyepolygon[i].vertices[0].tex[j];
+            texcoord2[j] = head.leyepolygon[i].vertices[1].tex[j];
+            texcoord3[j] = head.leyepolygon[i].vertices[2].tex[j];
         }
         var v1 = new THREE.Vector2(texcoord1[0], texcoord1[1]);
         var v2 = new THREE.Vector2(texcoord2[0], texcoord2[1]);
         var v3 = new THREE.Vector2(texcoord3[0], texcoord3[1]);
 
-        face_geometry.faceVertexUvs[0].push([v1, v2, v3]);
+        //face_geometry.faceVertexUvs[0].push([v1, v2, v3]);
         line_geometry.vertices.push(new THREE.Vector3(v1.x, v1.y, 0), new THREE.Vector3(v2.x,  v2.y, 0), new THREE.Vector3(v3.x, v3.y, 0));
         var line = new THREE.Line(line_geometry, line_material);
         scene.add(line);
     }
 
     
-    
-    console.log(head)
+    console.log(face_geometry)
     
     face_geometry.computeBoundingSphere();
     face_geometry.computeFaceNormals();
@@ -145,7 +151,7 @@ function init() {
     customgeom.translateOnAxis(new THREE.Vector3(0, 1, 0), 35);
     //scene.add(customgeom);
 
-     var gridXZ = new THREE.GridHelper(50, 10);
+    var gridXZ = new THREE.GridHelper(50, 10);
     gridXZ.setColors(new THREE.Color(0xff00ff), new THREE.Color(0xffffff));
     gridXZ.rotation.x = Math.PI / 2;
     scene.add(gridXZ);
