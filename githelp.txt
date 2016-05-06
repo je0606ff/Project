@@ -4,7 +4,7 @@ download/install git
 在該目錄，按右鍵啟動 git bash
 
 1. who are you? {for FIRST TIME git user}
-   git config --global user.mail "je0606ff@gmail.com"
+   git config --global user.email "je0606ff@gmail.com"
    git config --global user.name "je0606ff"
 
 =============================================================================
